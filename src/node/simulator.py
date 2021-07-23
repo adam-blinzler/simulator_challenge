@@ -13,7 +13,7 @@ class Simulator(base_node.BaseNode):
     def __init__(self) -> None:
         super().__init__(registry.NodeIDs.SIMULATOR)
         self._set_initial_values()
-        self._heading_increiment = 90
+        self._heading_increment = 90
 
         self.add_publishers(registry.TopicSpecs.ODOMETRY)
         self.add_subscribers({registry.TopicSpecs.RC_JS_DEF: self.rcv_js})
@@ -21,11 +21,11 @@ class Simulator(base_node.BaseNode):
 
     def _set_initial_values(self) -> None:
         self._position = [0, 0]
-        self._heading = 90
+        self._heading = 90.0
 
         self._obsticles = self._load_obsticles()
 
-    def _reset_simulation(self):
+    def _reset_simulation(self) -> None:
         print("INFO :: Simulation is resetting to initial state")
         self._set_initial_values()
 
@@ -35,7 +35,7 @@ class Simulator(base_node.BaseNode):
             or msg.joystick == messages.JoystickType.TRACK_RIGHT
         ):
             self._heading = self._normalize_heading(
-                self._heading + msg.deflection * self._heading_increiment
+                self._heading + msg.deflection * self._heading_increment
             )
 
         elif (
@@ -53,7 +53,12 @@ class Simulator(base_node.BaseNode):
             )
 
             if self._is_valid_location(new_position):
-                self._position = new_position
+                # check obsticles
+                if new_position in self._obsticles:
+                    print("Warning :: Robot collided with an obstricle")
+                else:
+                    self._position = new_position
+
             else:
                 # restart the simulation
                 self._reset_simulation()
@@ -69,7 +74,7 @@ class Simulator(base_node.BaseNode):
             await asyncio.sleep(0.05)
 
     @staticmethod
-    def _normalize_heading(heading):
+    def _normalize_heading(heading: float) -> float:
         sign = -1 if heading >= 0 else 1
         # while loop is currrently not required but future development could have a spin exceeding 360 degrees rotation
         while heading < 0 or heading > 359:
@@ -77,11 +82,11 @@ class Simulator(base_node.BaseNode):
         return heading
 
     @staticmethod
-    def _load_obsticles():
+    def _load_obsticles() -> list:
         obsticles = [[1, 2], [4, 3], [-6, 7]]
         return obsticles
 
-    def _is_valid_location(self, position):
+    def _is_valid_location(self, position: list) -> bool:
         valid_location = True
 
         # check boundries
@@ -92,11 +97,6 @@ class Simulator(base_node.BaseNode):
         if not (position[1] >= WORLD_EDGES[0] and position[1] <= WORLD_EDGES[1]):
             valid_location = False
             print("ERROR :: Robot attempted to travel outside boundries")
-
-        # check obsticles
-        if position in self._obsticles:
-            valid_location = False
-            print("ERROR :: Robot collided with an obstricle")
 
         return valid_location
 

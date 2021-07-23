@@ -46,7 +46,7 @@ class PotreroView(base_node.BaseNode):
         print(f"[({position[0]},{position[1]}) , {heading}]    ")
 
     @staticmethod
-    def _viz_heading_char(heading: float):
+    def _viz_heading_char(heading: float) -> str:
         # assumes heading is sanatized between 0 - 359 degrees in 90 degree incriments
 
         heading_char = "^"
