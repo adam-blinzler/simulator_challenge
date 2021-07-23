@@ -29,6 +29,8 @@ class JoystickType(enum.Enum):
     # Track joysticks
     TRACK_LEFT = "track_left"
     TRACK_RIGHT = "track_right"
+    TRACK_FORWARD = "track_forward"
+    TRACK_BACKWARD = "track_backward"
 
     # Left joystick
     CAB_SWING = "cab_swing"
@@ -51,7 +53,9 @@ class JoystickDeflection(core.Message):
 
 class Odometry(core.Message):
     # TODO: Fill this out, of course
-    position: float
+    position: list
+    heading: float
+    obsticles: list  # this should be moved to a safety message
 
 
 ########################################################################################
@@ -61,5 +65,6 @@ class Odometry(core.Message):
 
 class NavigateRequest(core.RPCRequest):
     # TODO: Fill this out, of course
-    position: float
+    position: list
     tolerance: float = 0.1
+    heading: float

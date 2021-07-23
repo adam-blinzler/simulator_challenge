@@ -30,6 +30,10 @@ class PotreroRC(base_node.BaseNode):
             direction: Optional[str] = "L"
         elif arrow_key_bytes == "[C":
             direction = "R"
+        elif arrow_key_bytes == "[A":
+            direction = "F"
+        elif arrow_key_bytes == "[B":
+            direction = "B"
         else:
             direction = None
         return direction
@@ -59,14 +63,26 @@ class PotreroRC(base_node.BaseNode):
 
     async def _viz_pub_loop(self) -> None:
         while True:
+            # display user input
             dir_label = " " if self._direction is None else self._direction
             print(f"\rDIRECTION: [{dir_label}]", end="")
 
+            # act on user input
             if self._direction is not None:
-                js_def = -0.5 if self._direction == "L" else 0.5
-                msg = messages.JoystickDeflection(
-                    joystick=messages.JoystickType.TRACK_LEFT, deflection=js_def
-                )
+                if self._direction == "L":
+                    js_def = -1.0
+                    js_type = messages.JoystickType.TRACK_LEFT
+                elif self._direction == "R":
+                    js_def = 1.0
+                    js_type = messages.JoystickType.TRACK_RIGHT
+                elif self._direction == "F":
+                    js_def = 0.5
+                    js_type = messages.JoystickType.TRACK_FORWARD
+                elif self._direction == "B":
+                    js_def = -0.5
+                    js_type = messages.JoystickType.TRACK_BACKWARD
+
+                msg = messages.JoystickDeflection(joystick=js_type, deflection=js_def)
                 self.publish(registry.TopicSpecs.RC_JS_DEF, msg)
             self._direction = None
 

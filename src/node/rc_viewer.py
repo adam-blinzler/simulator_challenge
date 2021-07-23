@@ -20,23 +20,44 @@ class PotreroView(base_node.BaseNode):
     @staticmethod
     def _viz_welcome() -> None:
         print("# Welcome to the next-gen Built Robotics UI.")
-        print("# Here is a 1D map of your robot in the world.")
+        print("# Here is a 2D map of your robot in the world.")
 
     async def rcv_odometry(self, msg: messages.Odometry) -> None:
-        self._viz_map(msg.position)
+        self._viz_map(msg.position, msg.heading, msg.obsticles)
+
+    def _viz_map(self, position: list, heading: float, obsticles: list) -> None:
+        os.system("clear")
+        self._viz_welcome()
+
+        for j in range(MAP_BOUNDS[0], MAP_BOUNDS[1] + 1, 1):
+            line_str = "   |"
+
+            for i in range(MAP_BOUNDS[0], MAP_BOUNDS[1] + 1, 1):
+                if i == int(np.floor(position[0])) and j == int(np.floor(position[1])):
+                    line_str += self._viz_heading_char(heading)
+                elif [i, j] in obsticles:
+                    line_str += "X"
+                else:
+                    line_str += "-"
+            line_str += "|   "
+
+            print(line_str)
+        print("[(position)  ,  Heading ]")
+        print(f"[({position[0]},{position[1]}) , {heading}]    ")
 
     @staticmethod
-    def _viz_map(position: float) -> None:
-        number_line_len = int(MAP_BOUNDS[1] - MAP_BOUNDS[0])
-        line_position = int(np.clip(position - MAP_BOUNDS[0], 0, number_line_len))
+    def _viz_heading_char(heading: float):
+        # assumes heading is sanatized between 0 - 359 degrees in 90 degree incriments
 
-        leading_dashes = "-" * min(line_position, number_line_len - 1)
-        lagging_dashes = "-" * (number_line_len - line_position - 1)
-        line_str = f"{leading_dashes}X{lagging_dashes}"
-        labeled_line_str = f"{MAP_BOUNDS[0]}|{line_str}|{MAP_BOUNDS[1]}"
+        heading_char = "^"
+        if heading == 90:
+            heading_char = ">"
+        elif heading == 180:
+            heading_char = "v"
+        elif heading == 270:
+            heading_char = "<"
 
-        # Add spaces at the end to overwrite old chars
-        print(f"\r{labeled_line_str} [{position}]            ", end="")
+        return heading_char
 
 
 if __name__ == "__main__":
