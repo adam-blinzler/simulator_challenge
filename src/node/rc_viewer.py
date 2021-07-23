@@ -52,8 +52,12 @@ class PotreroView(base_node.BaseNode):
         heading_char = "^"
         if heading == 90:
             heading_char = ">"
+        elif heading == 45 or heading == 225:
+            heading_char = "/"
         elif heading == 180:
             heading_char = "v"
+        elif heading == 135 or heading == 315:
+            heading_char = "\\"
         elif heading == 270:
             heading_char = "<"
 

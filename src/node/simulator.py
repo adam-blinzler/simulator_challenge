@@ -13,7 +13,7 @@ class Simulator(base_node.BaseNode):
     def __init__(self) -> None:
         super().__init__(registry.NodeIDs.SIMULATOR)
         self._set_initial_values()
-        self._heading_increment = 90
+        self._heading_increment = 45
 
         self.add_publishers(registry.TopicSpecs.ODOMETRY)
         self.add_subscribers({registry.TopicSpecs.RC_JS_DEF: self.rcv_js})
@@ -43,12 +43,16 @@ class Simulator(base_node.BaseNode):
             or msg.joystick == messages.JoystickType.TRACK_BACKWARD
         ):
             new_position = self._position.copy()
+            # new position is allowed to move diagonally but is rounded to nearest 0.5
+
             new_position[0] = round(
-                self._position[0] + np.sin(np.radians(self._heading)) * msg.deflection,
+                self._position[0]
+                + round(np.sin(np.radians(self._heading)) * msg.deflection * 2) / 2,
                 1,
             )
             new_position[1] = round(
-                self._position[1] - np.cos(np.radians(self._heading)) * msg.deflection,
+                self._position[1]
+                - round(np.cos(np.radians(self._heading)) * msg.deflection * 2) / 2,
                 1,
             )
 
